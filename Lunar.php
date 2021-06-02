@@ -158,7 +158,7 @@ class HolidayUtil
    * 获取指定年月的节假日列表
    * @param int $year 年
    * @param int $month 月，1-12
-   * @return array
+   * @return Holiday[]
    */
   public static function getHolidaysByYm($year, $month)
   {
@@ -168,7 +168,7 @@ class HolidayUtil
   /**
    * 获取指定年的节假日列表
    * @param int $year 年
-   * @return array
+   * @return Holiday[]
    */
   public static function getHolidaysByYear($year)
   {
@@ -178,7 +178,7 @@ class HolidayUtil
   /**
    * 获取指定年月日的节假日列表
    * @param string $ymd 年、年月、年月日
-   * @return array 节假日列表
+   * @return Holiday[] 节假日列表
    */
   public static function getHolidays($ymd)
   {
@@ -190,7 +190,7 @@ class HolidayUtil
    * @param int $year 年
    * @param int $month 月，1-12
    * @param int $day 日，1-31
-   * @return array
+   * @return Holiday[]
    */
   public static function getHolidaysByTargetYmd($year, $month, $day)
   {
@@ -200,7 +200,7 @@ class HolidayUtil
   /**
    * 获取指定节日（仅节日当天）的相关节假日列表
    * @param string $ymd 年月日
-   * @return array
+   * @return Holiday[]
    */
   public static function getHolidaysByTarget($ymd)
   {
@@ -344,8 +344,7 @@ class LunarUtil
     '7-7' => '七夕节',
     '8-15' => '中秋节',
     '9-9' => '重阳节',
-    '12-8' => '腊八节',
-    '12-30' => '除夕'
+    '12-8' => '腊八节'
   );
 
   /**
@@ -1327,7 +1326,7 @@ class LunarUtil
    * 获取日宜
    * @param string $monthGanZhi 月干支
    * @param string $dayGanZhi 日干支
-   * @return array 宜
+   * @return string[] 宜
    */
   public static function getDayYi($monthGanZhi, $dayGanZhi)
   {
@@ -1372,7 +1371,7 @@ class LunarUtil
    * 获取日忌
    * @param string $monthGanZhi 月干支
    * @param string $dayGanZhi 日干支
-   * @return array 忌
+   * @return string[] 忌
    */
   public static function getDayJi($monthGanZhi, $dayGanZhi)
   {
@@ -1416,7 +1415,7 @@ class LunarUtil
    * 获取日吉神
    * @param int $lunarMonth 月
    * @param string $dayGanZhi 日干支
-   * @return array 吉神
+   * @return string[] 吉神
    */
   public static function getDayJiShen($lunarMonth, $dayGanZhi)
   {
@@ -1445,7 +1444,7 @@ class LunarUtil
    * 获取日凶煞
    * @param int $lunarMonth 月
    * @param string $dayGanZhi 日干支
-   * @return array 凶煞
+   * @return string[] 凶煞
    */
   public static function getDayXiongSha($lunarMonth, $dayGanZhi)
   {
@@ -1474,7 +1473,7 @@ class LunarUtil
    * 获取时宜
    * @param string $dayGanZhi 日干支
    * @param string $timeGanZhi 时辰干支
-   * @return array 宜
+   * @return string[] 宜
    */
   public static function getTimeYi($dayGanZhi, $timeGanZhi)
   {
@@ -1503,7 +1502,7 @@ class LunarUtil
    * 获取时忌
    * @param string $dayGanZhi 日干支
    * @param string $timeGanZhi 时辰干支
-   * @return array 忌
+   * @return string[] 忌
    */
   public static function getTimeJi($dayGanZhi, $timeGanZhi)
   {
@@ -2522,7 +2521,7 @@ class EightChar
 
   /**
    * 获取月柱地支十神，由于藏干分主气、余气、杂气，所以返回结果可能为1到3个元素
-   * @return array 十神
+   * @return string[] 十神
    */
   public function getMonthShiShenZhi()
   {
@@ -2603,7 +2602,7 @@ class EightChar
 
   /**
    * 获取日柱地支十神，由于藏干分主气、余气、杂气，所以返回结果可能为1到3个元素
-   * @return array 十神
+   * @return string[] 十神
    */
   public function getDayShiShenZhi()
   {
@@ -2702,7 +2701,7 @@ class EightChar
 
   /**
    * 获取时柱地支十神，由于藏干分主气、余气、杂气，所以返回结果可能为1到3个元素
-   * @return array 十神
+   * @return string[] 十神
    */
   public function getTimeShiShenZhi()
   {
@@ -4394,7 +4393,7 @@ class Lunar
   /**
    * 获取节日，有可能一天会有多个节日
    *
-   * @return array 节日列表，如春节
+   * @return string[] 节日列表，如春节
    */
   public function getFestivals()
   {
@@ -4402,6 +4401,9 @@ class Lunar
     $key = $this->month . '-' . $this->day;
     if (!empty(LunarUtil::$FESTIVAL[$key])) {
       $l[] = LunarUtil::$FESTIVAL[$key];
+    }
+    if (abs($this->month) == 12 && $this->day >= 29 && $this->year != $this->next(1)->getYear()) {
+      $l[] = '除夕';
     }
     return $l;
   }
@@ -4923,7 +4925,7 @@ class Lunar
 
   /**
    * 获取八字，男性也称乾造，女性也称坤造（以立春交接时刻作为新年的开始）
-   * @return array 八字（男性也称乾造，女性也称坤造）
+   * @return string[] 八字（男性也称乾造，女性也称坤造）
    */
   public function getBaZi()
   {
@@ -4938,7 +4940,7 @@ class Lunar
 
   /**
    * 获取八字五行
-   * @return array 八字五行
+   * @return string[] 八字五行
    */
   public function getBaZiWuXing()
   {
@@ -4953,7 +4955,7 @@ class Lunar
 
   /**
    * 获取八字纳音
-   * @return array 八字纳音
+   * @return string[] 八字纳音
    */
   public function getBaZiNaYin()
   {
@@ -4968,7 +4970,7 @@ class Lunar
 
   /**
    * 获取八字天干十神，日柱十神为日主，其余三柱根据天干十神表查询
-   * @return array 八字天干十神
+   * @return string[] 八字天干十神
    */
   public function getBaZiShiShenGan()
   {
@@ -4983,7 +4985,7 @@ class Lunar
 
   /**
    * 获取八字地支十神，根据地支十神表查询
-   * @return array 八字地支十神
+   * @return string[] 八字地支十神
    */
   public function getBaZiShiShenZhi()
   {
@@ -5002,7 +5004,7 @@ class Lunar
 
   /**
    * 获取八字年支十神
-   * @return array 八字年支十神
+   * @return string[] 八字年支十神
    */
   public function getBaZiShiShenYearZhi()
   {
@@ -5011,7 +5013,7 @@ class Lunar
 
   /**
    * 获取八字月支十神
-   * @return array 八字月支十神
+   * @return string[] 八字月支十神
    */
   public function getBaZiShiShenMonthZhi()
   {
@@ -5020,7 +5022,7 @@ class Lunar
 
   /**
    * 获取八字日支十神
-   * @return array 八字日支十神
+   * @return string[] 八字日支十神
    */
   public function getBaZiShiShenDayZhi()
   {
@@ -5029,7 +5031,7 @@ class Lunar
 
   /**
    * 获取八字时支十神
-   * @return array 八字时支十神
+   * @return string[] 八字时支十神
    */
   public function getBaZiShiShenTimeZhi()
   {
@@ -5134,7 +5136,7 @@ class Lunar
 
   /**
    * 获取每日宜
-   * @return array 宜
+   * @return string[] 宜
    */
   public function getDayYi()
   {
@@ -5143,7 +5145,7 @@ class Lunar
 
   /**
    * 获取时宜
-   * @return array 宜
+   * @return string[] 宜
    */
   public function getTimeYi()
   {
@@ -5152,7 +5154,7 @@ class Lunar
 
   /**
    * 获取每日忌
-   * @return array 忌
+   * @return string[] 忌
    */
   public function getDayJi()
   {
@@ -5161,7 +5163,7 @@ class Lunar
 
   /**
    * 获取时忌
-   * @return array 忌
+   * @return string[] 忌
    */
   public function getTimeJi()
   {
@@ -5170,7 +5172,7 @@ class Lunar
 
   /**
    * 获取日吉神（宜趋），如果没有，返回['无']
-   * @return array 吉神
+   * @return string[] 吉神
    */
   public function getDayJiShen()
   {
@@ -5179,7 +5181,7 @@ class Lunar
 
   /**
    * 获取日凶煞（宜忌），如果没有，返回['无']
-   * @return array 凶煞
+   * @return string[] 凶煞
    */
   public function getDayXiongSha()
   {
@@ -7121,14 +7123,14 @@ class SolarHalfYear
 
   /**
    * 获取本半年的月份
-   * @return array
+   * @return SolarMonth[]
    */
   public function getMonths()
   {
     $l = array();
     $index = $this->getIndex() - 1;
     for ($i = 0; $i < SolarHalfYear::$MONTH_COUNT; $i++) {
-      $l[] = new SolarHalfYear($this->year, SolarHalfYear::$MONTH_COUNT * $index + $i + 1);
+      $l[] = new SolarMonth($this->year, SolarHalfYear::$MONTH_COUNT * $index + $i + 1);
     }
     return $l;
   }
@@ -7346,7 +7348,7 @@ class SolarSeason
 
   /**
    * 获取本季度的月份
-   * @return array
+   * @return SolarMonth[]
    */
   public function getMonths()
   {
@@ -7577,7 +7579,7 @@ class SolarWeek
 
   /**
    * 获取本周的阳历日期列表（可能跨月）
-   * @return array
+   * @return Solar[]
    */
   public function getDays()
   {
@@ -7595,7 +7597,7 @@ class SolarWeek
 
   /**
    * 获取本周的阳历日期列表（仅限当月）
-   * @return array
+   * @return Solar[]
    */
   public function getDaysInMonth()
   {
