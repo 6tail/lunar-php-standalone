@@ -316,11 +316,33 @@ class LunarUtil
     '黑道' => '凶'
   );
 
+  public static $LU = array(
+    '甲' => '寅',
+    '乙' => '卯',
+    '丙' => '巳',
+    '丁' => '午',
+    '戊' => '巳',
+    '己' => '午',
+    '庚' => '申',
+    '辛' => '酉',
+    '壬' => '亥',
+    '癸' => '子',
+
+    '寅' => '甲',
+    '卯' => '乙',
+    '巳' => '丙,戊',
+    '午' => '丁,己',
+    '申' => '庚',
+    '酉' => '辛',
+    '亥' => '壬',
+    '子' => '癸'
+  );
+
   public static $PENG_ZU_GAN = array('', '甲不开仓财物耗散', '乙不栽植千株不长', '丙不修灶必见灾殃', '丁不剃头头必生疮', '戊不受田田主不祥', '己不破券二比并亡', '庚不经络织机虚张', '辛不合酱主人不尝', '壬不泱水更难提防', '癸不词讼理弱敌强');
 
   public static $PENG_ZU_ZHI = array('', '子不问卜自惹祸殃', '丑不冠带主不还乡', '寅不祭祀神鬼不尝', '卯不穿井水泉不香', '辰不哭泣必主重丧', '巳不远行财物伏藏', '午不苫盖屋主更张', '未不服药毒气入肠', '申不安床鬼祟入房', '酉不会客醉坐颠狂', '戌不吃犬作怪上床', '亥不嫁娶不利新郎');
 
-  public static $NUMBER = array('〇', '一', '二', '三', '四', '五', '六', '七', '八', '九');
+  public static $NUMBER = array('〇', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二');
 
   public static $MONTH = array('', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊');
 
@@ -3433,6 +3455,392 @@ class LiuYue
 
 }
 
+
+/**
+ * 时辰
+ * @package com\nlf\calendar
+ */
+class LunarTime
+{
+  /**
+   * 天干下标，0-9
+   * @var int
+   */
+  private $ganIndex;
+
+  /**
+   * 地支下标，0-11
+   * @var int
+   */
+  private $zhiIndex;
+
+  /**
+   * 阴历
+   * @var Lunar
+   */
+  private $lunar;
+
+  private function __construct($lunarYear, $lunarMonth, $lunarDay, $hour, $minute, $second)
+  {
+    $this->lunar = Lunar::fromYmdHms($lunarYear, $lunarMonth, $lunarDay, $hour, $minute, $second);
+    $this->zhiIndex = LunarUtil::getTimeZhiIndex(sprintf('%02d:%02d', $hour, $minute));
+    $this->ganIndex = ($this->lunar->getDayGanIndexExact() % 5 * 2 + $this->zhiIndex) % 10;
+  }
+
+  /**
+   * 通过指定农历年月日时分秒获取时辰
+   * @param int $lunarYear 年（农历）
+   * @param int $lunarMonth 月（农历），1到12，闰月为负，即闰2月=-2
+   * @param int $lunarDay 日（农历），1到30
+   * @param int $hour 小时（阳历）
+   * @param int $minute 分钟（阳历）
+   * @param int $second 秒钟（阳历）
+   * @return LunarTime
+   */
+  public static function fromYmdHms($lunarYear, $lunarMonth, $lunarDay, $hour, $minute, $second)
+  {
+    return new LunarTime($lunarYear, $lunarMonth, $lunarDay, $hour, $minute, $second);
+  }
+
+  /**
+   * 获取时辰生肖
+   *
+   * @return string 时辰生肖，如虎
+   */
+  public function getShengXiao()
+  {
+    return LunarUtil::$SHENG_XIAO[$this->zhiIndex + 1];
+  }
+
+  /**
+   * 获取时辰（地支）
+   * @return string 时辰（地支）
+   */
+  public function getZhi()
+  {
+    return LunarUtil::$ZHI[$this->zhiIndex + 1];
+  }
+
+  /**
+   * 获取时辰（天干）
+   * @return string 时辰（天干）
+   */
+  public function getGan()
+  {
+    return LunarUtil::$GAN[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时辰干支（时柱）
+   * @return string 时辰干支（时柱）
+   */
+  public function getGanZhi()
+  {
+    return $this->getGan() . $this->getZhi();
+  }
+
+  /**
+   * 获取时辰喜神方位
+   * @return string 喜神方位，如艮
+   */
+  public function getPositionXi()
+  {
+    return LunarUtil::$POSITION_XI[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时辰喜神方位描述
+   * @return string 喜神方位描述，如东北
+   */
+  public function getPositionXiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionXi()];
+  }
+
+  /**
+   * 获取时辰阳贵神方位
+   * @return string 阳贵神方位，如艮
+   */
+  public function getPositionYangGui()
+  {
+    return LunarUtil::$POSITION_YANG_GUI[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时辰阳贵神方位描述
+   * @return string 阳贵神方位描述，如东北
+   */
+  public function getPositionYangGuiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionYangGui()];
+  }
+
+  /**
+   * 获取时辰阴贵神方位
+   * @return string 阴贵神方位，如艮
+   */
+  public function getPositionYinGui()
+  {
+    return LunarUtil::$POSITION_YIN_GUI[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时辰阴贵神方位描述
+   * @return string 阴贵神方位描述，如东北
+   */
+  public function getPositionYinGuiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionYinGui()];
+  }
+
+  /**
+   * 获取时辰福神方位
+   * @return string 福神方位，如艮
+   */
+  public function getPositionFu()
+  {
+    return LunarUtil::$POSITION_FU[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时辰福神方位描述
+   * @return string 福神方位描述，如东北
+   */
+  public function getPositionFuDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionFu()];
+  }
+
+  /**
+   * 获取时辰财神方位
+   * @return string 财神方位，如艮
+   */
+  public function getPositionCai()
+  {
+    return LunarUtil::$POSITION_CAI[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时辰财神方位描述
+   * @return string 财神方位描述，如东北
+   */
+  public function getPositionCaiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionCai()];
+  }
+
+  /**
+   * 获取时冲
+   * @return string 时冲，如申
+   */
+  public function getChong()
+  {
+    return LunarUtil::$CHONG[$this->zhiIndex + 1];
+  }
+
+  /**
+   * 获取无情之克的时冲天干
+   * @return string 无情之克的时冲天干，如甲
+   */
+  public function getChongGan()
+  {
+    return LunarUtil::$CHONG_GAN[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取有情之克的时冲天干
+   * @return string 有情之克的时冲天干，如甲
+   */
+  public function getChongGanTie()
+  {
+    return LunarUtil::$CHONG_GAN_TIE[$this->ganIndex + 1];
+  }
+
+  /**
+   * 获取时冲生肖
+   * @return string 时冲生肖，如猴
+   */
+  public function getChongShengXiao()
+  {
+    $chong = $this->getChong();
+    for ($i = 0, $j = count(LunarUtil::$ZHI); $i < $j; $i++) {
+      if (strcmp(LunarUtil::$ZHI[$i], $chong) === 0) {
+        return LunarUtil::$SHENG_XIAO[$i];
+      }
+    }
+    return '';
+  }
+
+  /**
+   * 获取时冲描述
+   * @return string 时冲描述，如(壬申)猴
+   */
+  public function getChongDesc()
+  {
+    return '(' . $this->getChongGan() . $this->getChong() . ')' . $this->getChongShengXiao();
+  }
+
+  /**
+   * 获取时煞
+   * @return string 时煞，如北
+   */
+  public function getSha()
+  {
+    return LunarUtil::$SHA[$this->getZhi()];
+  }
+
+  /**
+   * 获取时辰纳音
+   * @return string 时辰纳音，如剑锋金
+   */
+  public function getNaYin()
+  {
+    return LunarUtil::$NAYIN[$this->getGanZhi()];
+  }
+
+  /**
+   * 获取值时天神
+   * @return string 值时天神
+   */
+  public function getTianShen()
+  {
+    $dayZhi = $this->lunar->getDayZhiExact();
+    $offset = LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$dayZhi];
+    return LunarUtil::$TIAN_SHEN[($this->zhiIndex + $offset) % 12 + 1];
+  }
+
+  /**
+   * 获取值时天神类型：黄道/黑道
+   * @return string 值时天神类型：黄道/黑道
+   */
+  public function getTianShenType()
+  {
+    return LunarUtil::$TIAN_SHEN_TYPE[$this->getTianShen()];
+  }
+
+  /**
+   * 获取值时天神吉凶
+   * @return string 吉/凶
+   */
+  public function getTianShenLuck()
+  {
+    return LunarUtil::$TIAN_SHEN_TYPE_LUCK[$this->getTianShenType()];
+  }
+
+  /**
+   * 获取时宜
+   * @return string[] 宜
+   */
+  public function getYi()
+  {
+    return LunarUtil::getTimeYi($this->lunar->getDayInGanZhiExact(), $this->getGanZhi());
+  }
+
+  /**
+   * 获取时忌
+   * @return string[] 忌
+   */
+  public function getJi()
+  {
+    return LunarUtil::getTimeJi($this->lunar->getDayInGanZhiExact(), $this->getGanZhi());
+  }
+
+  /**
+   * 获取值时九星（时家紫白星歌诀：三元时白最为佳，冬至阳生顺莫差，孟日七宫仲一白，季日四绿发萌芽，每把时辰起甲子，本时星耀照光华，时星移入中宫去，顺飞八方逐细查。夏至阴生逆回首，孟归三碧季加六，仲在九宫时起甲，依然掌中逆轮跨。）
+   * @return NineStar 值时九星
+   */
+  public function getNineStar()
+  {
+    //顺逆
+    $solarYmd = $this->lunar->getSolar()->toYmd();
+    $jieQi = $this->lunar->getJieQiTable();
+    $asc = false;
+    if (strcmp($solarYmd, $jieQi['冬至']->toYmd()) >= 0 && strcmp($solarYmd, $jieQi['夏至']->toYmd()) < 0) {
+      $asc = true;
+    }
+    $start = $asc ? 7 : 3;
+    $dayZhi = $this->lunar->getDayZhi();
+    if (strpos('子午卯酉', $dayZhi) !== false) {
+      $start = $asc ? 1 : 9;
+    } else if (strpos('辰戌丑未', $dayZhi) !== false) {
+      $start = $asc ? 4 : 6;
+    }
+    $index = $asc ? $start + $this->zhiIndex - 1 : $start - $this->zhiIndex - 1;
+    if ($index > 8) {
+      $index -= 9;
+    }
+    if ($index < 0) {
+      $index += 9;
+    }
+    return new NineStar($index);
+  }
+
+  public function getGanIndex()
+  {
+    return $this->ganIndex;
+  }
+
+  public function getZhiIndex()
+  {
+    return $this->zhiIndex;
+  }
+
+  /**
+   * @return string
+   */
+  public function toString()
+  {
+    return $this->getGanZhi();
+  }
+
+  public function __toString()
+  {
+    return $this->toString();
+  }
+
+  /**
+   * 获取时辰所在旬
+   * @return string 旬
+   */
+  public function getXun()
+  {
+    return LunarUtil::getXun($this->getGanZhi());
+  }
+
+  /**
+   * 获取值时空亡
+   * @return string 空亡(旬空)
+   */
+  public function getXunKong()
+  {
+    return LunarUtil::getXunKong($this->getGanZhi());
+  }
+
+  public function getMinHm()
+  {
+    $hour = $this->lunar->getHour();
+    if ($hour <1){
+      return '00:00';
+    } else if ($hour > 22) {
+      return '23:00';
+    }
+    return sprintf('%02d:00', $hour % 2 == 0? $hour - 1 : $hour);
+  }
+
+  public function getMaxHm()
+  {
+    $hour = $this->lunar->getHour();
+    if ($hour <1){
+      return '00:59';
+    } else if ($hour > 22) {
+      return '23:59';
+    }
+    return sprintf('%02d:59', $hour % 2 == 0? $hour : $hour + 1);
+  }
+
+}
+
+
 /**
  * 农历日期
  * @package com\nlf\calendar
@@ -5965,6 +6373,35 @@ class Lunar
     return LunarUtil::$WU_HOU[($offset * 3 + floor($days / 5)) % count(LunarUtil::$WU_HOU)];
   }
 
+  public function getDayLu()
+  {
+    $gan = LunarUtil::$LU[$this->getDayGan()];
+    $zhi = null;
+    if(!empty(LunarUtil::$LU[$this->getDayZhi()]))
+    {
+      $zhi = LunarUtil::$LU[$this->getDayZhi()];
+    }
+    $lu = $gan . '命互禄';
+    if (null != $zhi) {
+      $lu .= ' ' . $zhi . '命进禄';
+    }
+    return $lu;
+  }
+
+  public function getTime() {
+    return LunarTime::fromYmdHms($this->year, $this->month, $this->day, $this->hour, $this->minute, $this->second);
+  }
+
+  public function getTimes()
+  {
+    $l = array();
+    $l[] = LunarTime::fromYmdHms($this->year, $this->month, $this->day, 0, 0, 0);
+    for($i = 0; $i < 12; $i++){
+      $l[] = LunarTime::fromYmdHms($this->year, $this->month, $this->day, ($i+1)*2-1, 0, 0);
+    }
+    return $l;
+  }
+
 }
 
 /**
@@ -6290,6 +6727,42 @@ class LunarYear
         $y++;
       }
     }
+  }
+
+  public function getZhiShui()
+  {
+    $offset = 4 - Solar::fromJulianDay($this->getMonth(1)->getFirstJulianDay())->getLunar()->getDayZhiIndex();
+    if ($offset < 0) {
+      $offset += 12;
+    }
+    return LunarUtil::$NUMBER[$offset+1] . '龙治水';
+  }
+
+  public function getFenBing()
+  {
+    $offset = 2 - Solar::fromJulianDay($this->getMonth(1)->getFirstJulianDay())->getLunar()->getDayGanIndex();
+    if ($offset < 0) {
+      $offset += 10;
+    }
+    return LunarUtil::$NUMBER[$offset+1] . '人分饼';
+  }
+
+  public function getGengTian()
+  {
+    $offset = 1 - Solar::fromJulianDay($this->getMonth(1)->getFirstJulianDay())->getLunar()->getDayZhiIndex();
+    if ($offset < 0) {
+      $offset += 12;
+    }
+    return LunarUtil::$NUMBER[$offset+1] . '牛耕田';
+  }
+
+  public function getDeJin()
+  {
+    $offset = 7 - Solar::fromJulianDay($this->getMonth(1)->getFirstJulianDay())->getLunar()->getDayGanIndex();
+    if ($offset < 0) {
+      $offset += 10;
+    }
+    return LunarUtil::$NUMBER[$offset+1] . '日得金';
   }
 
 }

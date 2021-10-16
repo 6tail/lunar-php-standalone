@@ -2,6 +2,7 @@
 
 require 'Lunar.php';
 
+use com\nlf\calendar\LunarYear;
 use com\nlf\calendar\util\HolidayUtil;
 use com\nlf\calendar\Lunar;
 use com\nlf\calendar\Solar;
@@ -298,3 +299,7 @@ echo $lunar->getLiuYao() . "\n";
 
 // 物候
 echo $lunar->getWuHou() . "\n";
+
+// 三日得金
+$year = LunarYear::fromYear(2018);
+echo $year->getDeJin() . "\n";
