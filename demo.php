@@ -2,6 +2,7 @@
 
 require 'Lunar.php';
 
+use com\nlf\calendar\Foto;
 use com\nlf\calendar\LunarYear;
 use com\nlf\calendar\util\HolidayUtil;
 use com\nlf\calendar\Lunar;
@@ -303,3 +304,19 @@ echo $lunar->getWuHou() . "\n";
 // 三日得金
 $year = LunarYear::fromYear(2018);
 echo $year->getDeJin() . "\n";
+
+$solar = Solar::fromYmd(2021, 11, 5);
+echo $solar->getLunar()->toString() . "\n";
+
+$solar = Solar::fromDate(new DateTime());
+echo $solar->getLunar()->toString() . "\n";
+
+$lunar = Lunar::fromDate(new DateTime());
+echo $lunar->toString() . "\n";
+
+$solar = Solar::fromDate(new DateTime('2021-11-05'));
+echo $solar->getLunar()->toString() . "\n";
+
+// 佛历
+$foto = Foto::fromLunar(Lunar::fromYmd(2021, 10, 14));
+echo $foto->toFullString() . "\n";
