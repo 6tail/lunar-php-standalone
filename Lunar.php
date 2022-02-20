@@ -627,7 +627,7 @@ class TaoUtil
   private static function init()
   {
     TaoUtil::$FESTIVAL = array(
-      '1-1' => array(new TaoFestival('天腊之辰', '天腊，此日五帝会于束方九炁青天')),
+      '1-1' => array(new TaoFestival('天腊之辰', '天腊，此日五帝会于东方九炁青天')),
       '1-3' => array(new TaoFestival('郝真人圣诞'), new TaoFestival('孙真人圣诞')),
       '1-5' => array(new TaoFestival('孙祖清静元君诞')),
       '1-7' => array(new TaoFestival('举迁赏会', '此日上元赐福，天官同地水二官考校罪福')),
@@ -662,7 +662,7 @@ class TaoUtil
       '4-20' => array(new TaoFestival('眼光圣母娘娘诞')),
       '4-28' => array(new TaoFestival('神农先帝诞')),
       '5-1' => array(new TaoFestival('南极长生大帝圣诞')),
-      '5-5' => array(new TaoFestival('地腊之辰', '地腊，此日五帝会於南方三炁丹天'), new TaoFestival('南方雷祖圣诞'), new TaoFestival('地祗温元帅圣诞'), new TaoFestival('雷霆邓天君圣诞')),
+      '5-5' => array(new TaoFestival('地腊之辰', '地腊，此日五帝会于南方三炁丹天'), new TaoFestival('南方雷祖圣诞'), new TaoFestival('地祗温元帅圣诞'), new TaoFestival('雷霆邓天君圣诞')),
       '5-11' => array(new TaoFestival('城隍爷圣诞')),
       '5-13' => array(new TaoFestival('关圣帝君降神'), new TaoFestival('关平太子圣诞')),
       '5-18' => array(new TaoFestival('张天师圣诞')),
@@ -704,7 +704,7 @@ class TaoUtil
       '9-22' => array(new TaoFestival('增福财神诞')),
       '9-23' => array(new TaoFestival('萨翁真君圣诞')),
       '9-28' => array(new TaoFestival('五显灵官马元帅圣诞')),
-      '10-1' => array(new TaoFestival('民岁腊之辰', '民岁腊，此日五帝会於北方五炁黑天'), new TaoFestival('东皇大帝圣诞')),
+      '10-1' => array(new TaoFestival('民岁腊之辰', '民岁腊，此日五帝会于北方五炁黑天'), new TaoFestival('东皇大帝圣诞')),
       '10-3' => array(new TaoFestival('三茅应化真君圣诞')),
       '10-6' => array(new TaoFestival('天曹诸司五岳五帝圣诞')),
       '10-15' => array(new TaoFestival('下元水官大帝圣诞'), new TaoFestival('建生大会', '此日下元解厄，水官同天地二官考校罪福')),
@@ -715,7 +715,7 @@ class TaoUtil
       '11-9' => array(new TaoFestival('湘子韩祖圣诞')),
       '11-11' => array(new TaoFestival('太乙救苦天尊圣诞')),
       '11-26' => array(new TaoFestival('北方五道圣诞')),
-      '12-8' => array(new TaoFestival('王侯腊之辰', '王侯腊，此日五帝会於上方玄都玉京')),
+      '12-8' => array(new TaoFestival('王侯腊之辰', '王侯腊，此日五帝会于上方玄都玉京')),
       '12-16' => array(new TaoFestival('南岳大帝圣诞'), new TaoFestival('福德正神诞')),
       '12-20' => array(new TaoFestival('鲁班先师圣诞')),
       '12-21' => array(new TaoFestival('天猷上帝圣诞')),
@@ -7185,11 +7185,14 @@ class Lunar
   public function getHou()
   {
     $jieQi = $this->getPrevJieQiByWholeDay(true);
-    $name = $jieQi->getName();
     $startSolar = $jieQi->getSolar();
     $days = ExactDate::getDaysBetween($startSolar->getYear(), $startSolar->getMonth(), $startSolar->getDay(), $this->solar->getYear(), $this->solar->getMonth(), $this->solar->getDay());
-    $hou = LunarUtil::$HOU[(int)($days / 5) % count(LunarUtil::$HOU)];
-    return $name . ' ' . $hou;
+    $max = count(LunarUtil::$HOU) - 1;
+    $offset = floor($days / 5);
+    if ($offset > $max) {
+      $offset = $max;
+    }
+    return $jieQi->getName() . ' ' . LunarUtil::$HOU[$offset];
   }
 
   public function getDayLu()
@@ -7400,6 +7403,64 @@ class LunarMonth
     }
     $offset = ($n - $monthZhiIndex) % 9;
     return NineStar::fromIndex($offset);
+  }
+
+  public function next($n)
+  {
+    if (0 == $n) {
+      return LunarMonth::fromYm($this->year, $this->month);
+    } else {
+      $rest = abs($n);
+      $ny = $this->year;
+      $iy = $ny;
+      $im = $this->month;
+      $index = 0;
+      $months = LunarYear::fromYear($ny)->getMonths();
+      if ($n > 0) {
+        while (true) {
+          $size = count($months);
+          for ($i = 0; $i < $size; $i++) {
+            $m = $months[$i];
+            if ($m->getYear() == $iy && $m->getMonth() == $im) {
+              $index = $i;
+              break;
+            }
+          }
+          $more = $size - $index - 1;
+          if ($rest < $more) {
+            break;
+          }
+          $rest -= $more;
+          $lastMonth = $months[$size - 1];
+          $iy = $lastMonth->getYear();
+          $im = $lastMonth->getMonth();
+          $ny++;
+          $months = LunarYear::fromYear($ny)->getMonths();
+        }
+        return $months[$index + $rest];
+      } else {
+        while (true) {
+          $size = count($months);
+          for ($i = 0; $i < $size; $i++) {
+            $m = $months[$i];
+            if ($m->getYear() == $iy && $m->getMonth() == $im) {
+              $index = $i;
+              break;
+            }
+          }
+          if ($rest <= $index) {
+            break;
+          }
+          $rest -= $index;
+          $firstMonth = $months[0];
+          $iy = $firstMonth->getYear();
+          $im = $firstMonth->getMonth();
+          $ny--;
+          $months = LunarYear::fromYear($ny)->getMonths();
+        }
+        return $months[$index - $rest];
+      }
+    }
   }
 }
 
@@ -7879,6 +7940,11 @@ class LunarYear
   public function getPositionTaiSuiDesc()
   {
     return LunarUtil::$POSITION_DESC[$this->getPositionTaiSui()];
+  }
+
+  public function next($n)
+  {
+    return LunarYear::fromYear($this->year + $n);
   }
 }
 
