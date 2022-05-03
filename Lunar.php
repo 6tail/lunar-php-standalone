@@ -869,7 +869,7 @@ class LunarUtil
     '1-25' => array('填仓节'),
     '1-30' => array('正月晦'),
     '2-1' => array('中和节'),
-    '2-2' => array('春社'),
+    '2-2' => array('社日节'),
     '3-3' => array('上巳节'),
     '5-20' => array('分龙节'),
     '5-25' => array('会龙节'),
@@ -2335,6 +2335,8 @@ class SolarUtil
     '8-1' => '建军节',
     '9-10' => '教师节',
     '10-1' => '国庆节',
+    '10-31' => '万圣节前夜',
+    '11-1' => '万圣节',
     '12-24' => '平安夜',
     '12-25' => '圣诞节'
   );
@@ -2344,6 +2346,7 @@ class SolarUtil
    * @var array
    */
   public static $WEEK_FESTIVAL = array(
+    '3-0-1' => '全国中小学生安全教育日',
     '5-2-0' => '母亲节',
     '6-3-0' => '父亲节',
     '11-4-4' => '感恩节'
@@ -5407,9 +5410,26 @@ class Lunar
         $l[] = $f;
       }
     }
-    $qm = $this->jieQi['清明'];
-    if (strcmp($this->solar->toYmd(), $qm->next(-1)->toYmd()) === 0) {
+    $jq = $this->jieQi['清明'];
+    $solarYmd = $this->solar->toYmd();
+    if (strcmp($solarYmd, $jq->next(-1)->toYmd()) === 0) {
       $l[] = '寒食节';
+    }
+    $jq = $this->jieQi['立春'];
+    $offset = 4 - $jq->getLunar()->getDayGanIndex();
+    if ($offset < 0) {
+      $offset += 10;
+    }
+    if (strcmp($solarYmd, $jq->next($offset + 40)->toYmd()) === 0) {
+      $l[] = '春社';
+    }
+    $jq = $this->jieQi['立秋'];
+    $offset = 4 - $jq->getLunar()->getDayGanIndex();
+    if ($offset < 0) {
+      $offset += 10;
+    }
+    if (strcmp($solarYmd, $jq->next($offset + 40)->toYmd()) === 0) {
+      $l[] = '秋社';
     }
     return $l;
   }
@@ -8723,6 +8743,12 @@ class Solar
     if (!empty(SolarUtil::$WEEK_FESTIVAL[$key])) {
       $l[] = SolarUtil::$WEEK_FESTIVAL[$key];
     }
+    if ($this->day + 7 >= SolarUtil::getDaysOfMonth($this->year, $this->month)) {
+      $key = $this->month . '-0-' . $week;
+      if (!empty(SolarUtil::$WEEK_FESTIVAL[$key])) {
+        $l[] = SolarUtil::$WEEK_FESTIVAL[$key];
+      }
+    }
     return $l;
   }
 
@@ -10388,4 +10414,3 @@ class Tao
   }
 
 }
-
