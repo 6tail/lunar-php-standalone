@@ -30,6 +30,12 @@ class HolidayUtil
   private static $ZERO = 48;
 
   /**
+   * 删除标识
+   * @var string
+   */
+  private static $TAG_REMOVE = '~';
+
+  /**
    * 节假日名称（元旦0，春节1，清明2，劳动3，端午4，中秋5，国庆6，国庆中秋7，抗战胜利日8）
    * @var array
    */
@@ -224,9 +230,12 @@ class HolidayUtil
     while (strlen($data) >= self::$SIZE) {
       $segment = substr($data, 0, self::$SIZE);
       $day = substr($segment, 0, 8);
+      $remove = strcmp(self::$TAG_REMOVE, substr($segment, 8, 1)) == 0;
       $holiday = self::getHoliday($day);
       if (null == $holiday) {
-        $append .= $segment;
+        if (!$remove) {
+          $append .= $segment;
+        }
       } else {
         $nameIndex = -1;
         for ($i = 0, $j = count(self::$NAMES); $i < $j; $i++) {
@@ -237,7 +246,7 @@ class HolidayUtil
         }
         if ($nameIndex > -1) {
           $old = $day . chr($nameIndex + self::$ZERO) . ($holiday->isWork() ? '0' : '1') . str_replace('-', '', $holiday->getTarget());
-          self::$DATA = str_replace($old, $segment, self::$DATA);
+          self::$DATA = str_replace($old, $remove ? '' : $segment, self::$DATA);
         }
       }
       $data = substr($data, self::$SIZE);
@@ -1055,26 +1064,17 @@ class LunarUtil
     '北' => '玄武'
   );
 
-  public static $CHONG = array('', '午', '未', '申', '酉', '戌', '亥', '子', '丑', '寅', '卯', '辰', '巳');
+  public static $CHONG = array('午', '未', '申', '酉', '戌', '亥', '子', '丑', '寅', '卯', '辰', '巳');
 
-  public static $CHONG_GAN = array('', '戊', '己', '庚', '辛', '壬', '癸', '甲', '乙', '丙', '丁');
+  public static $CHONG_GAN = array('戊', '己', '庚', '辛', '壬', '癸', '甲', '乙', '丙', '丁');
 
-  public static $CHONG_GAN_BAD = array(
-    '庚' => '甲',
-    '辛' => '乙',
-    '壬' => '丙',
-    '癸' => '丁'
-  );
+  public static $CHONG_GAN_TIE = array('己', '戊', '辛', '庚', '癸', '壬', '乙', '甲', '丁', '丙');
 
-  public static $CHONG_GAN_TIE = array('', '己', '戊', '辛', '庚', '癸', '壬', '乙', '甲', '丁', '丙');
+  public static $CHONG_GAN_4 = array('庚', '辛', '壬', '癸', '', '', '甲', '乙', '丙', '丁');
 
-  public static $CHONG_GAN_TIE_GOOD = array(
-    '甲' => '己',
-    '丙' => '辛',
-    '戊' => '癸',
-    '庚' => '乙',
-    '壬' => '丁'
-  );
+  public static $HE_GAN_5 = array('己', '庚', '辛', '壬', '癸', '甲', '乙', '丙', '丁', '戊');
+
+  public static $HE_ZHI_6 = array('丑', '子', '亥', '戌', '酉', '申', '未', '午', '巳', '辰', '卯', '寅');
 
   public static $SHA = array(
     '子' => '南',
@@ -2389,6 +2389,7 @@ class SolarUtil
     '5-5' => array('马克思诞辰纪念日'),
     '5-8' => array('世界红十字日'),
     '5-11' => array('世界肥胖日'),
+    '5-25' => array('525心理健康节'),
     '5-27' => array('上海解放日'),
     '5-31' => array('世界无烟日'),
     '6-5' => array('世界环境日'),
@@ -3310,6 +3311,26 @@ class EightChar
   }
 
   /**
+   * 获取胎息
+   * @return string 胎息
+   */
+  public function getTaiXi()
+  {
+    $ganIndex = (2 == $this->sect) ? $this->lunar->getDayGanIndexExact2() : $this->lunar->getDayGanIndexExact();
+    $zhiIndex = (2 == $this->sect) ? $this->lunar->getDayZhiIndexExact2() : $this->lunar->getDayZhiIndexExact();
+    return LunarUtil::$HE_GAN_5[$ganIndex] . LunarUtil::$HE_ZHI_6[$zhiIndex];
+  }
+
+  /**
+   * 获取胎息纳音
+   * @return string 纳音
+   */
+  public function getTaiXiNaYin()
+  {
+    return LunarUtil::$NAYIN[$this->getTaiXi()];
+  }
+
+  /**
    * 获取命宫
    * @return string 命宫
    */
@@ -3366,7 +3387,10 @@ class EightChar
         $timeZhiIndex = $i;
       }
     }
-    $zhiIndex = (2 + ($monthZhiIndex + $timeZhiIndex)) % 12;
+    $zhiIndex = 2 + $monthZhiIndex + $timeZhiIndex;
+    if ($zhiIndex > 12) {
+      $zhiIndex -= 12;
+    }
     $jiaZiIndex = LunarUtil::getJiaZiIndex($this->lunar->getMonthInGanZhiExact()) - ($monthZhiIndex - $zhiIndex);
     if ($jiaZiIndex >= 60) {
       $jiaZiIndex -= 60;
@@ -4186,7 +4210,7 @@ class LunarTime
    */
   public function getChong()
   {
-    return LunarUtil::$CHONG[$this->zhiIndex + 1];
+    return LunarUtil::$CHONG[$this->zhiIndex];
   }
 
   /**
@@ -4195,7 +4219,7 @@ class LunarTime
    */
   public function getChongGan()
   {
-    return LunarUtil::$CHONG_GAN[$this->ganIndex + 1];
+    return LunarUtil::$CHONG_GAN[$this->ganIndex];
   }
 
   /**
@@ -4204,7 +4228,7 @@ class LunarTime
    */
   public function getChongGanTie()
   {
-    return LunarUtil::$CHONG_GAN_TIE[$this->ganIndex + 1];
+    return LunarUtil::$CHONG_GAN_TIE[$this->ganIndex];
   }
 
   /**
@@ -5915,7 +5939,7 @@ class Lunar
    */
   public function getDayChong()
   {
-    return LunarUtil::$CHONG[$this->dayZhiIndex + 1];
+    return LunarUtil::$CHONG[$this->dayZhiIndex];
   }
 
   /**
@@ -5924,7 +5948,7 @@ class Lunar
    */
   public function getTimeChong()
   {
-    return LunarUtil::$CHONG[$this->timeZhiIndex + 1];
+    return LunarUtil::$CHONG[$this->timeZhiIndex];
   }
 
   /**
@@ -5942,7 +5966,7 @@ class Lunar
    */
   public function getDayChongGan()
   {
-    return LunarUtil::$CHONG_GAN[$this->dayGanIndex + 1];
+    return LunarUtil::$CHONG_GAN[$this->dayGanIndex];
   }
 
   /**
@@ -5951,7 +5975,7 @@ class Lunar
    */
   public function getTimeChongGan()
   {
-    return LunarUtil::$CHONG_GAN[$this->timeGanIndex + 1];
+    return LunarUtil::$CHONG_GAN[$this->timeGanIndex];
   }
 
   /**
@@ -5969,7 +5993,7 @@ class Lunar
    */
   public function getDayChongGanTie()
   {
-    return LunarUtil::$CHONG_GAN_TIE[$this->dayGanIndex + 1];
+    return LunarUtil::$CHONG_GAN_TIE[$this->dayGanIndex];
   }
 
   /**
@@ -5978,7 +6002,7 @@ class Lunar
    */
   public function getTimeChongGanTie()
   {
-    return LunarUtil::$CHONG_GAN_TIE[$this->timeGanIndex + 1];
+    return LunarUtil::$CHONG_GAN_TIE[$this->timeGanIndex];
   }
 
   /**
@@ -8743,7 +8767,7 @@ class Solar
     if (!empty(SolarUtil::$WEEK_FESTIVAL[$key])) {
       $l[] = SolarUtil::$WEEK_FESTIVAL[$key];
     }
-    if ($this->day + 7 >= SolarUtil::getDaysOfMonth($this->year, $this->month)) {
+    if ($this->day + 7 > SolarUtil::getDaysOfMonth($this->year, $this->month)) {
       $key = $this->month . '-0-' . $week;
       if (!empty(SolarUtil::$WEEK_FESTIVAL[$key])) {
         $l[] = SolarUtil::$WEEK_FESTIVAL[$key];
