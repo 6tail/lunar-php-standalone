@@ -2240,7 +2240,7 @@ class ShouXingUtil
   {
     $t = ShouXingUtil::msaLonT2($w) * 36525;
     $t = $t - ShouXingUtil::dtT($t) + ShouXingUtil::$ONE_THIRD;
-    $v = (($t + 0.5) % 1) * ShouXingUtil::$SECOND_PER_DAY;
+    $v = (intval($t + 0.5) % 1) * ShouXingUtil::$SECOND_PER_DAY;
     if ($v < 1800 || $v > ShouXingUtil::$SECOND_PER_DAY - 1800) {
       $t = ShouXingUtil::msaLont($w) * 36525 - ShouXingUtil::dtT($t) + ShouXingUtil::$ONE_THIRD;
     }
@@ -4164,7 +4164,8 @@ class LunarTime
    */
   public function getPositionFuBySect($sect)
   {
-    return (1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2)[$this->ganIndex + 1];
+    $fu = 1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2;
+    return $fu[$this->ganIndex + 1];
   }
 
   /**
@@ -5672,7 +5673,8 @@ class Lunar
    */
   public function getDayPositionFuBySect($sect)
   {
-    return (1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2)[$this->dayGanIndex + 1];
+    $fu = 1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2;
+    return $fu[$this->dayGanIndex + 1];
   }
 
   /**
@@ -5710,7 +5712,8 @@ class Lunar
    */
   public function getTimePositionFuBySect($sect)
   {
-    return (1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2)[$this->timeGanIndex + 1];
+    $fu = 1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2;
+    return $fu[$this->timeGanIndex + 1];
   }
 
   /**
@@ -7159,7 +7162,7 @@ class Lunar
       return null;
     }
     $days = ExactDate::getDaysBetweenDate($startCalendar, $currentCalendar);
-    return new ShuJiu(LunarUtil::$NUMBER[$days / 9 + 1] . '九', $days % 9 + 1);
+    return new ShuJiu(LunarUtil::$NUMBER[intval($days / 9) + 1] . '九', $days % 9 + 1);
   }
 
   public function getFu()
@@ -7955,7 +7958,8 @@ class LunarYear
    */
   public function getPositionFuBySect($sect)
   {
-    return (1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2)[$this->ganIndex + 1];
+    $fu = 1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2;
+    return $fu[$this->ganIndex + 1];
   }
 
   /**
