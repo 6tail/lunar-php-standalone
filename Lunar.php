@@ -6412,13 +6412,16 @@ class Lunar
 
   protected function _getYearNineStar($yearInGanZhi)
   {
-    $index = LunarUtil::getJiaZiIndex($yearInGanZhi) + 1;
-    $yearOffset = 0;
-    if ($index != LunarUtil::getJiaZiIndex($this->getYearInGanZhi()) + 1) {
-      $yearOffset = -1;
+    $indexExact = LunarUtil::getJiaZiIndex($yearInGanZhi) + 1;
+    $index = LunarUtil::getJiaZiIndex($this->getYearInGanZhi()) + 1;
+    $yearOffset = $indexExact - $index;
+    if ($yearOffset > 1) {
+      $yearOffset -= 60;
+    } else if ($yearOffset < -1) {
+      $yearOffset += 60;
     }
     $yuan = (int)(($this->year + $yearOffset + 2696) / 60) % 3;
-    $offset = (62 + $yuan * 3 - $index) % 9;
+    $offset = (62 + $yuan * 3 - $indexExact) % 9;
     if (0 === $offset) {
       $offset = 9;
     }
@@ -9059,6 +9062,27 @@ class SolarMonth
     $days = SolarUtil::getDaysOfMonth($this->year, $this->month);
     for ($i = 1; $i < $days; $i++) {
       $l[] = $d->next($i);
+    }
+    return $l;
+  }
+
+  /**
+   * 获取本月的阳历周列表
+   * @param int $start 星期几作为一周的开始，1234560分别代表星期一至星期天
+   * @return SolarWeek[] 周列表
+   */
+  public function getWeeks($start)
+  {
+    $l = array();
+    $week = SolarWeek::fromYmd($this->year, $this->month, 1, $start);
+    $firstDay = $week->getFirstDay();
+    while (true) {
+      $l[] = $week;
+      $week = $week->next(1, false);
+      $firstDay = $week->getFirstDay();
+      if ($firstDay->getYear() > $this->year || $firstDay->getMonth() > $this->month) {
+        break;
+      }
     }
     return $l;
   }
