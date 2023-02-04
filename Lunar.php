@@ -2501,9 +2501,7 @@ class SolarUtil
    */
   public static function getWeeksOfMonth($year, $month, $start)
   {
-    $days = self::getDaysOfMonth($year, $month);
-    $week = Solar::fromYmd($year, $month, 1)->getWeek();
-    return ceil(($days + $week - $start) / count(self::$WEEK));
+    return (int)ceil((self::getDaysOfMonth($year, $month) + Solar::fromYmd($year, $month, 1)->getWeek() - $start) / count(self::$WEEK));
   }
 
   /**
@@ -7195,19 +7193,14 @@ class Lunar
   public function getWuHou()
   {
     $jieQi = $this->getPrevJieQiByWholeDay(true);
-    $name = $jieQi->getName();
     $offset = 0;
     for ($i = 0, $j = count(self::$JIE_QI); $i < $j; $i++) {
-      if (strcmp($name, self::$JIE_QI[$i]) === 0) {
+      if (strcmp($jieQi->getName(), self::$JIE_QI[$i]) === 0) {
         $offset = $i;
         break;
       }
     }
-    $current = Solar::fromYmd($this->solar->getYear(), $this->solar->getMonth(), $this->solar->getDay());
-    $startSolar = $jieQi->getSolar();
-    $start = Solar::fromYmd($startSolar->getYear(), $startSolar->getMonth(), $startSolar->getDay());
-    $days = $current->subtract($start);
-    $index = (int)($days / 5);
+    $index = (int)($this->solar->subtract($jieQi->getSolar()) / 5);
     if ($index > 2) {
       $index = 2;
     }
@@ -7217,9 +7210,8 @@ class Lunar
   public function getHou()
   {
     $jieQi = $this->getPrevJieQiByWholeDay(true);
-    $days = $this->solar->subtract($jieQi->getSolar());
     $max = count(LunarUtil::$HOU) - 1;
-    $offset = floor($days / 5);
+    $offset = floor($this->solar->subtract($jieQi->getSolar()) / 5);
     if ($offset > $max) {
       $offset = $max;
     }
@@ -8836,11 +8828,7 @@ class Solar
       if ($d > 28) {
         if (!SolarUtil::isLeapYear($y)) {
           $d -= 28;
-          $m ++;
-          if ($m > 12) {
-            $m = 1;
-            $y++;
-          }
+          $m++;
         }
       }
     }
@@ -8868,11 +8856,7 @@ class Solar
       if ($d > 28) {
         if (!SolarUtil::isLeapYear($y)) {
           $d -= 28;
-          $m ++;
-          if ($m > 12) {
-            $m = 1;
-            $y++;
-          }
+          $m++;
         }
       }
     }
@@ -8987,10 +8971,7 @@ class Solar
       while ($rest > 0) {
         $solar = $solar->next($add);
         $work = true;
-        $year = $solar->getYear();
-        $month = $solar->getMonth();
-        $day = $solar->getDay();
-        $holiday = HolidayUtil::getHolidayByYmd($year, $month, $day);
+        $holiday = HolidayUtil::getHolidayByYmd($solar->getYear(), $solar->getMonth(), $solar->getDay());
         if (null == $holiday) {
           $week = $solar->getWeek();
           if (0 === $week || 6 === $week) {
@@ -9116,8 +9097,7 @@ class SolarHalfYear
    */
   public function next($halfYears)
   {
-    $month = SolarMonth::fromYm($this->year, $this->month);
-    $month = $month->next(self::$MONTH_COUNT * $halfYears);
+    $month = SolarMonth::fromYm($this->year, $this->month)->next(self::$MONTH_COUNT * $halfYears);
     return new SolarHalfYear($month->getYear(), $month->getMonth());
   }
 
@@ -9477,8 +9457,7 @@ class SolarWeek
    */
   public function getIndex()
   {
-    $firstDayWeek = Solar::fromYmd($this->year, $this->month, 1)->getWeek();
-    $offset = $firstDayWeek - $this->start;
+    $offset = Solar::fromYmd($this->year, $this->month, 1)->getWeek() - $this->start;
     if ($offset < 0) {
       $offset += 7;
     }
@@ -9491,8 +9470,7 @@ class SolarWeek
    */
   public function getIndexInYear()
   {
-    $firstDayWeek = Solar::fromYmd($this->year, 1, 1)->getWeek();
-    $offset = $firstDayWeek - $this->start;
+    $offset = Solar::fromYmd($this->year, 1, 1)->getWeek() - $this->start;
     if ($offset < 0) {
       $offset += 7;
     }
@@ -9510,10 +9488,10 @@ class SolarWeek
     if (0 === $weeks) {
       return SolarWeek::fromYmd($this->year, $this->month, $this->day, $this->start);
     }
+    $solar = Solar::fromYmd($this->year, $this->month, $this->day);
     if ($separateMonth) {
       $n = $weeks;
-      $solar = Solar::fromYmd($this->year, $this->month, $this->day);
-      $week = SolarWeek::fromYmd($this->year, $this->month, $this->day, $this->start);
+      $week = SolarWeek::fromYmd($solar->getYear(), $solar->getMonth(), $solar->getDay(), $this->start);
       $month = $this->month;
       $plus = $n > 0;
       while (0 !== $n) {
@@ -9538,7 +9516,7 @@ class SolarWeek
               $week = SolarWeek::fromYmd($lastDay->getYear(), $lastDay->getMonth(), $lastDay->getDay(), $this->start);
               $weekMonth = $week->getMonth();
             } else {
-              $solar = Solar::fromYmd($this->year, $this->month, SolarUtil::getDaysOfMonth($week->getYear(), $week->getMonth()));
+              $solar = Solar::fromYmd($week->year, $week->month, SolarUtil::getDaysOfMonth($week->getYear(), $week->getMonth()));
               $week = SolarWeek::fromYmd($solar->getYear(), $solar->getMonth(), $solar->getDay(), $this->start);
             }
           }
@@ -9548,7 +9526,6 @@ class SolarWeek
       }
       return $week;
     } else {
-      $solar = Solar::fromYmd($this->year, $this->month, $this->day);
       $solar = $solar->next($weeks * 7);
       return SolarWeek::fromYmd($solar->getYear(), $solar->getMonth(), $solar->getDay(), $this->start);
     }
