@@ -4563,12 +4563,12 @@ class Lunar
 
   private function __construct($lunarYear, $lunarMonth, $lunarDay, $hour, $minute, $second, $solar, $y)
   {
-    $this->year = $lunarYear;
-    $this->month = $lunarMonth;
-    $this->day = $lunarDay;
-    $this->hour = $hour;
-    $this->minute = $minute;
-    $this->second = $second;
+    $this->year = intval($lunarYear);
+    $this->month = intval($lunarMonth);
+    $this->day = intval($lunarDay);
+    $this->hour = intval($hour);
+    $this->minute = intval($minute);
+    $this->second = intval($second);
     $this->solar = $solar;
     $this->compute($y);
   }
@@ -7308,9 +7308,9 @@ class LunarMonth
 
   function __construct($lunarYear, $lunarMonth, $dayCount, $firstJulianDay)
   {
-    $this->year = $lunarYear;
-    $this->month = $lunarMonth;
-    $this->dayCount = $dayCount;
+    $this->year = intval($lunarYear);
+    $this->month = intval($lunarMonth);
+    $this->dayCount = intval($dayCount);
     $this->firstJulianDay = $firstJulianDay;
   }
 
@@ -7543,6 +7543,7 @@ class LunarYear
   function __construct($lunarYear)
   {
     LunarYear::_initLeap();
+    $lunarYear = intval($lunarYear);
     $this->year = $lunarYear;
     $offset = $lunarYear - 4;
     $yearGanIndex = $offset % 10;
@@ -8381,6 +8382,13 @@ class Solar
 
   function __construct($year, $month, $day, $hour, $minute, $second)
   {
+    $year = intval($year);
+    $month = intval($month);
+    $day = intval($day);
+    $hour = intval($hour);
+    $minute = intval($minute);
+    $second = intval($second);
+
     if (1582 == $year && 10 == $month) {
       if ($day > 4 && $day < 15) {
         throw new RuntimeException(sprintf('wrong solar year %d month %d day %d', $year, $month, $day));
@@ -8509,9 +8517,13 @@ class Solar
       $offsetYear += 60;
     }
     $startYear = $today->getYear() - $offsetYear - 1;
-    while ($startYear >= $baseYear) {
+    while (true) {
       $years[] = $startYear;
       $startYear -= 60;
+      if ($startYear < $baseYear) {
+        $years[] = $baseYear;
+        break;
+      }
     }
     $hour = 0;
     $timeZhi = substr($timeGanZhi, strlen($timeGanZhi) / 2);
@@ -9016,8 +9028,8 @@ class SolarHalfYear
 
   function __construct($year, $month)
   {
-    $this->year = $year;
-    $this->month = $month;
+    $this->year = intval($year);
+    $this->month = intval($month);
   }
 
   public function toString()
@@ -9124,8 +9136,8 @@ class SolarMonth
 
   function __construct($year, $month)
   {
-    $this->year = $year;
-    $this->month = $month;
+    $this->year = intval($year);
+    $this->month = intval($month);
   }
 
   public function toString()
@@ -9264,8 +9276,8 @@ class SolarSeason
 
   function __construct($year, $month)
   {
-    $this->year = $year;
-    $this->month = $month;
+    $this->year = intval($year);
+    $this->month = intval($month);
   }
 
   public function toString()
@@ -9385,10 +9397,10 @@ class SolarWeek
 
   function __construct($year, $month, $day, $start)
   {
-    $this->year = $year;
-    $this->month = $month;
-    $this->day = $day;
-    $this->start = $start;
+    $this->year = intval($year);
+    $this->month = intval($month);
+    $this->day = intval($day);
+    $this->start = intval($start);
   }
 
   public function toString()
@@ -9617,7 +9629,7 @@ class SolarYear
 
   function __construct($year)
   {
-    $this->year = $year;
+    $this->year = intval($year);
   }
 
   public function toString()
