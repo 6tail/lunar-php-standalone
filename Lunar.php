@@ -4629,9 +4629,7 @@ class Lunar
     $lunarMonth = 0;
     $lunarDay = 0;
     foreach ($ly->getMonths() as $m) {
-      // 初一
-      $firstDay = Solar::fromJulianDay($m->getFirstJulianDay());
-      $days = $solar->subtract($firstDay);
+      $days = $solar->subtract(Solar::fromJulianDay($m->getFirstJulianDay()));
       if ($days < $m->getDayCount()) {
         $lunarYear = $m->getYear();
         $lunarMonth = $m->getMonth();
@@ -7124,8 +7122,7 @@ class Lunar
       $start = $this->jieQi['冬至'];
       $start = Solar::fromYmd($start->getYear(), $start->getMonth(), $start->getDay());
     }
-    $end = Solar::fromYmd($start->getYear(), $start->getMonth(), $start->getDay());
-    $end = $end->next(81);
+    $end = Solar::fromYmd($start->getYear(), $start->getMonth(), $start->getDay())->next(81);
     if ($current->isBefore($start) || (!$current->isBefore($end))) {
       return null;
     }
@@ -7642,12 +7639,42 @@ class LunarYear
   }
 
   /**
-   * 获取本年的月份
+   * 获取月份
    * @return LunarMonth[]
    */
   public function getMonths()
   {
     return $this->months;
+  }
+
+  /**
+   * 获取总天数
+   * @return int
+   */
+  public function getDayCount()
+  {
+    $n = 0;
+    foreach ($this->months as $m) {
+      if ($m->getYear() == $this->year) {
+        $n += $m->getDayCount();
+      }
+    }
+    return $n;
+  }
+
+  /**
+   * 获取本年的月份
+   * @return LunarMonth[]
+   */
+  public function getMonthsInYear()
+  {
+    $l = array();
+    foreach ($this->months as $m) {
+      if ($m->getYear() == $this->year) {
+        $l[] = $m;
+      }
+    }
+    return $l;
   }
 
   /**
@@ -7705,7 +7732,9 @@ class LunarYear
     //冬至前的初一
     $w = ShouXingUtil::calcShuo($jq[0]);
     if ($w > $jq[0]) {
-      $w -= 29.5306;
+      if ($currentYear != 41 && $currentYear != 193 && $currentYear != 288 && $currentYear != 345 && $currentYear != 918 && $currentYear != 1013) {
+        $w -= 29.5306;
+      }
     }
     // 递推每月初一
     for ($i = 0; $i < 16; $i++) {
@@ -7716,42 +7745,38 @@ class LunarYear
       $dayCounts[] = (int)($hs[$i + 1] - $hs[$i]);
     }
 
-    $currentYearLeap = -1;
-    if (array_key_exists('_' . $currentYear, LunarYear::$LEAP)) {
-      $currentYearLeap = LunarYear::$LEAP['_' . $currentYear];
-    } else {
-      if ($hs[13] <= $jq[24]) {
-        $i = 1;
-        while ($hs[$i + 1] > $jq[2 * $i] && $i < 13) {
-          $i++;
-        }
-        $currentYearLeap = $i;
-      }
-    }
-
     $prevYear = $currentYear - 1;
-    $prevYearLeap = -1;
-    if (array_key_exists('_' . $prevYear, LunarYear::$LEAP)) {
-      $prevYearLeap = LunarYear::$LEAP['_' . $prevYear] - 12;
+    $leapYear = -1;
+    $leapIndex = -1;
+
+    if (array_key_exists('_' . $currentYear, LunarYear::$LEAP)) {
+      $leapYear = $currentYear;
+      $leapIndex = LunarYear::$LEAP['_' . $currentYear];
+    } else {
+      if (array_key_exists('_' . $prevYear, LunarYear::$LEAP)) {
+        $leapYear = $prevYear;
+        $leapIndex = LunarYear::$LEAP['_' . $prevYear] - 12;
+      } else {
+        if ($hs[13] <= $jq[24]) {
+          $i = 1;
+          while ($hs[$i + 1] > $jq[2 * $i] && $i < 13) {
+            $i++;
+          }
+          $leapYear = $currentYear;
+          $leapIndex = $i;
+        }
+      }
     }
 
     $y = $prevYear;
     $m = 11;
     for ($i = 0, $j = count($dayCounts); $i < $j; $i++) {
       $cm = $m;
-      $isNextLeap = false;
-      if ($y == $currentYear && $i == $currentYearLeap) {
+      if ($y == $leapYear && $i == $leapIndex) {
         $cm = -$cm;
-      } else if ($y == $prevYear && $i == $prevYearLeap) {
-        $cm = -$cm;
-      }
-      if ($y == $currentYear && $i + 1 == $currentYearLeap) {
-        $isNextLeap = true;
-      } else if ($y == $prevYear && $i + 1 == $prevYearLeap) {
-        $isNextLeap = true;
       }
       $this->months[] = new LunarMonth($y, $cm, $dayCounts[$i], $hs[$i] + Solar::$J2000);
-      if (!$isNextLeap) {
+      if ($y != $leapYear || $i + 1 != $leapIndex) {
         $m++;
       }
       if ($m == 13) {
@@ -8394,6 +8419,12 @@ class Solar
         throw new RuntimeException(sprintf('wrong solar year %d month %d day %d', $year, $month, $day));
       }
     }
+    if ($month < 1 || $month > 12) {
+      throw new RuntimeException(sprintf('wrong month %d', $month));
+    }
+    if ($day < 1 || $day > 31) {
+      throw new RuntimeException(sprintf('wrong day %d', $day));
+    }
     if ($hour < 0 || $hour > 23) {
       throw new RuntimeException(sprintf('wrong hour %d', $hour));
     }
@@ -8517,26 +8548,32 @@ class Solar
       $offsetYear += 60;
     }
     $startYear = $today->getYear() - $offsetYear - 1;
-    while (true) {
+    $minYear = $baseYear - 2;
+    while ($startYear >= $minYear) {
       $years[] = $startYear;
       $startYear -= 60;
-      if ($startYear < $baseYear) {
-        $years[] = $baseYear;
-        break;
-      }
     }
-    $hour = 0;
+    $hours = array();
     $timeZhi = substr($timeGanZhi, strlen($timeGanZhi) / 2);
-    for ($i = 0, $j = count(LunarUtil::$ZHI); $i < $j; $i++) {
+    for ($i = 1, $j = count(LunarUtil::$ZHI); $i < $j; $i++) {
       if (strcmp(LunarUtil::$ZHI[$i], $timeZhi) === 0) {
-        $hour = ($i - 1) * 2;
+        $hours[] = ($i - 1) * 2;
       }
     }
-    foreach ($years as $y) {
-      inner: for ($x = 0; $x < 3; $x++) {
-        $year = $y + $x;
-        $solar = self::fromYmdHms($year, 1, 1, $hour, 0, 0);
-        while ($solar->getYear() == $year) {
+    if (strcmp('子', $timeZhi) === 0) {
+      $hours[] = 23;
+    }
+    foreach ($hours as $hour) {
+      foreach ($years as $y) {
+        $maxYear = $y + 3;
+        $year = $y;
+        $month = 11;
+        if ($year < $baseYear) {
+          $year = $baseYear;
+          $month = 1;
+        }
+        $solar = self::fromYmdHms($year, $month, 1, $hour, 0, 0);
+        while ($solar->getYear() <= $maxYear) {
           $lunar = $solar->getLunar();
           $dgz = (2 == $sect) ? $lunar->getDayInGanZhiExact2() : $lunar->getDayInGanZhiExact();
           if (strcmp($lunar->getYearInGanZhiExact(), $yearGanZhi) == 0 && strcmp($lunar->getMonthInGanZhiExact(), $monthGanZhi) == 0 && strcmp($dgz, $dayGanZhi) == 0 && strcmp($lunar->getTimeInGanZhi(), $timeGanZhi) == 0) {
@@ -8867,8 +8904,7 @@ class Solar
    * @return Solar 阳历
    */
   public function nextMonth($months) {
-    $month = SolarMonth::fromYm($this->year, $this->month);
-    $month = $month->next($months);
+    $month = SolarMonth::fromYm($this->year, $this->month)->next($months);
     $y = $month->getYear();
     $m = $month->getMonth();
     $d = $this->day;
@@ -8990,7 +9026,7 @@ class Solar
     $solar = self::fromYmdHms($this->year, $this->month, $this->day, $this->hour, $this->minute, $this->second);
     if ($days != 0) {
       $rest = abs($days);
-      $add = $days < 1 ? -1 : 1;
+      $add = $days < 0 ? -1 : 1;
       while ($rest > 0) {
         $solar = $solar->next($add);
         $work = true;
@@ -9533,8 +9569,7 @@ class SolarWeek
               $week = SolarWeek::fromYmd($solar->getYear(), $solar->getMonth(), $solar->getDay(), $this->start);
             }
           } else {
-            $size = SolarUtil::getWeeksOfMonth($week->getYear(), $week->getMonth(), $week->getStart());
-            if ($size === $index) {
+            if (SolarUtil::getWeeksOfMonth($week->getYear(), $week->getMonth(), $week->getStart()) === $index) {
               $lastDay = $week->getFirstDay()->next(6);
               $week = SolarWeek::fromYmd($lastDay->getYear(), $lastDay->getMonth(), $lastDay->getDay(), $this->start);
               $weekMonth = $week->getMonth();
