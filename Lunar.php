@@ -279,6 +279,43 @@ class FotoUtil
    */
   private static $FESTIVAL;
 
+  /**
+   * 纪念日
+   * @var array
+   */
+  public static $OTHER_FESTIVAL = array(
+    '1-1' => array('弥勒菩萨圣诞'),
+    '1-6' => array('定光佛圣诞'),
+    '2-8' => array('释迦牟尼佛出家'),
+    '2-15' => array('释迦牟尼佛涅槃'),
+    '2-19' => array('观世音菩萨圣诞'),
+    '2-21' => array('普贤菩萨圣诞'),
+    '3-16' => array('准提菩萨圣诞'),
+    '4-4' => array('文殊菩萨圣诞'),
+    '4-8' => array('释迦牟尼佛圣诞'),
+    '4-15' => array('佛吉祥日'),
+    '4-28' => array('药王菩萨圣诞'),
+    '5-13' => array('伽蓝菩萨圣诞'),
+    '6-3' => array('韦驮菩萨圣诞'),
+    '6-19' => array('观音菩萨成道'),
+    '7-13' => array('大势至菩萨圣诞'),
+    '7-15' => array('佛欢喜日'),
+    '7-24' => array('龙树菩萨圣诞'),
+    '7-30' => array('地藏菩萨圣诞'),
+    '8-15' => array('月光菩萨圣诞'),
+    '8-22' => array('燃灯佛圣诞'),
+    '9-9' => array('摩利支天菩萨圣诞'),
+    '9-19' => array('观世音菩萨出家'),
+    '9-30' => array('药师琉璃光佛圣诞'),
+    '10-5' => array('达摩祖师圣诞'),
+    '10-20' => array('文殊菩萨出家'),
+    '11-17' => array('阿弥陀佛圣诞'),
+    '11-19' => array('日光菩萨圣诞'),
+    '12-8' => array('释迦牟尼佛成道'),
+    '12-23' => array('监斋菩萨圣诞'),
+    '12-29' => array('华严菩萨圣诞')
+  );
+
   /** 获取因果犯忌
    * @param string $md 月-日
    * @return FotoFestival[] 因果犯忌
@@ -846,7 +883,7 @@ class LunarUtil
 
   public static $DAY = array('', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十');
 
-  public static $YUE_XIANG = array('', '朔', '既朔', '蛾眉新', '蛾眉新', '蛾眉', '夕月', '上弦', '上弦', '九夜', '宵', '宵', '宵', '渐盈凸', '小望', '望', '既望', '立待', '居待', '寝待', '更待', '渐亏凸', '下弦', '下弦', '有明', '有明', '蛾眉残', '蛾眉残', '残', '晓', '晦');
+  public static $YUE_XIANG = array('', '朔', '既朔', '蛾眉新', '蛾眉新', '蛾眉', '夕', '上弦', '上弦', '九夜', '宵', '宵', '宵', '渐盈凸', '小望', '望', '既望', '立待', '居待', '寝待', '更待', '渐亏凸', '下弦', '下弦', '有明', '有明', '蛾眉残', '蛾眉残', '残', '晓', '晦');
 
   /**
    * 农历日期对应的节日
@@ -1782,8 +1819,7 @@ class LunarUtil
         $ys = substr($left, strpos($left, ':') + 1, strlen($left));
         $ys = substr($ys, 0, strpos($ys, ','));
         for ($i = 0, $j = strlen($ys); $i < $j; $i += 2) {
-          $m = substr($ys, $i, 2);
-          $l[] = self::$YI_JI[hexdec($m)];
+          $l[] = self::$YI_JI[hexdec(substr($ys, $i, 2))];
         }
         break;
       }
@@ -1826,8 +1862,7 @@ class LunarUtil
       if ($matched) {
         $ys = substr($left, strpos($left, ',') + 1, strlen($left));
         for ($i = 0, $j = strlen($ys); $i < $j; $i += 2) {
-          $m = substr($ys, $i, 2);
-          $l[] = self::$YI_JI[hexdec($m)];
+          $l[] = self::$YI_JI[hexdec(substr($ys, $i, 2))];
         }
         break;
       }
@@ -1858,8 +1893,7 @@ class LunarUtil
       }
       $js = substr($left, 0, strpos($left, ','));
       for ($i = 0, $j = strlen($js); $i < $j; $i += 2) {
-        $m = substr($js, $i, 2);
-        $l[] = self::$SHEN_SHA[hexdec($m)];
+        $l[] = self::$SHEN_SHA[hexdec(substr($js, $i, 2))];
       }
     }
     if (count($l) < 1) {
@@ -1887,8 +1921,7 @@ class LunarUtil
       }
       $xs = substr($left, strpos($left, ',') + 1, strlen($left));
       for ($i = 0, $j = strlen($xs); $i < $j; $i += 2) {
-        $m = substr($xs, $i, 2);
-        $l[] = self::$SHEN_SHA[hexdec($m)];
+        $l[] = self::$SHEN_SHA[hexdec(substr($xs, $i, 2))];
       }
     }
     if (count($l) < 1) {
@@ -1916,8 +1949,7 @@ class LunarUtil
       }
       $ys = substr($left, 0, strpos($left, ','));
       for ($i = 0, $j = strlen($ys); $i < $j; $i += 2) {
-        $m = substr($ys, $i, 2);
-        $l[] = self::$YI_JI[hexdec($m)];
+        $l[] = self::$YI_JI[hexdec(substr($ys, $i, 2))];
       }
     }
     if (count($l) < 1) {
@@ -1945,8 +1977,7 @@ class LunarUtil
       }
       $js = substr($left, strpos($left, ',') + 1, strlen($left));
       for ($i = 0, $j = strlen($js); $i < $j; $i += 2) {
-        $m = substr($js, $i, 2);
-        $l[] = self::$YI_JI[hexdec($m)];
+        $l[] = self::$YI_JI[hexdec(substr($js, $i, 2))];
       }
     }
     if (count($l) < 1) {
@@ -2358,70 +2389,141 @@ class SolarUtil
    */
   public static $OTHER_FESTIVAL = array(
     '1-8' => array('周恩来逝世纪念日'),
-    '1-10' => array('中国人民警察节', '中国公安110宣传日'),
+    '1-10' => array('中国人民警察节'),
+    '1-14' => array('日记情人节'),
     '1-21' => array('列宁逝世纪念日'),
     '1-26' => array('国际海关日'),
+    '1-27' => array('国际大屠杀纪念日'),
     '2-2' => array('世界湿地日'),
     '2-4' => array('世界抗癌日'),
-    '2-7' => array('京汉铁路罢工纪念'),
+    '2-7' => array('京汉铁路罢工纪念日'),
     '2-10' => array('国际气象节'),
     '2-19' => array('邓小平逝世纪念日'),
+    '2-20' => array('世界社会公正日'),
     '2-21' => array('国际母语日'),
     '2-24' => array('第三世界青年日'),
     '3-1' => array('国际海豹日'),
-    '3-3' => array('全国爱耳日'),
-    '3-5' => array('周恩来诞辰纪念日', '中国青年志愿者服务日'),
+    '3-3' => array('世界野生动植物日", "全国爱耳日'),
+    '3-5' => array('周恩来诞辰纪念日", "中国青年志愿者服务日'),
     '3-6' => array('世界青光眼日'),
+    '3-7' => array('女生节'),
     '3-12' => array('孙中山逝世纪念日'),
-    '3-14' => array('马克思逝世纪念日'),
+    '3-14' => array('马克思逝世纪念日", "白色情人节'),
     '3-17' => array('国际航海日'),
-    '3-18' => array('全国科技人才活动日'),
-    '3-21' => array('世界森林日', '世界睡眠日'),
+    '3-18' => array('全国科技人才活动日", "全国爱肝日'),
+    '3-20' => array('国际幸福日'),
+    '3-21' => array('世界森林日", "世界睡眠日", "国际消除种族歧视日'),
     '3-22' => array('世界水日'),
     '3-23' => array('世界气象日'),
     '3-24' => array('世界防治结核病日'),
-    '4-2' => array('国际儿童图书日'),
+    '3-29' => array('中国黄花岗七十二烈士殉难纪念日'),
+    '4-2' => array('国际儿童图书日", "世界自闭症日'),
+    '4-4' => array('国际地雷行动日'),
     '4-7' => array('世界卫生日'),
-    '4-22' => array('列宁诞辰纪念日'),
-    '4-23' => array('世界图书和版权日'),
-    '4-26' => array('世界知识产权日'),
+    '4-8' => array('国际珍稀动物保护日'),
+    '4-12' => array('世界航天日'),
+    '4-14' => array('黑色情人节'),
+    '4-15' => array('全民国家安全教育日'),
+    '4-22' => array('世界地球日", "列宁诞辰纪念日'),
+    '4-23' => array('世界读书日'),
+    '4-24' => array('中国航天日'),
+    '4-25' => array('儿童预防接种宣传日'),
+    '4-26' => array('世界知识产权日", "全国疟疾日'),
+    '4-28' => array('世界安全生产与健康日'),
+    '4-30' => array('全国交通安全反思日'),
+    '5-2' => array('世界金枪鱼日'),
     '5-3' => array('世界新闻自由日'),
     '5-5' => array('马克思诞辰纪念日'),
     '5-8' => array('世界红十字日'),
     '5-11' => array('世界肥胖日'),
+    '5-12' => array('全国防灾减灾日", "护士节'),
+    '5-14' => array('玫瑰情人节'),
+    '5-15' => array('国际家庭日'),
+    '5-19' => array('中国旅游日'),
+    '5-20' => array('网络情人节'),
+    '5-22' => array('国际生物多样性日'),
     '5-25' => array('525心理健康节'),
     '5-27' => array('上海解放日'),
+    '5-29' => array('国际维和人员日'),
+    '5-30' => array('中国五卅运动纪念日'),
     '5-31' => array('世界无烟日'),
+    '6-3' => array('世界自行车日'),
     '6-5' => array('世界环境日'),
     '6-6' => array('全国爱眼日'),
     '6-8' => array('世界海洋日'),
     '6-11' => array('中国人口日'),
-    '6-14' => array('世界献血日'),
+    '6-14' => array('世界献血日", "亲亲情人节'),
+    '6-17' => array('世界防治荒漠化与干旱日'),
+    '6-20' => array('世界难民日'),
+    '6-21' => array('国际瑜伽日'),
+    '6-25' => array('全国土地日'),
+    '6-26' => array('国际禁毒日", "联合国宪章日'),
     '7-1' => array('香港回归纪念日'),
-    '7-7' => array('中国人民抗日战争纪念日'),
-    '7-11' => array('世界人口日'),
+    '7-6' => array('国际接吻日", "朱德逝世纪念日'),
+    '7-7' => array('七七事变纪念日'),
+    '7-11' => array('世界人口日", "中国航海日'),
+    '7-14' => array('银色情人节'),
+    '7-18' => array('曼德拉国际日'),
+    '7-30' => array('国际友谊日'),
+    '8-3' => array('男人节'),
     '8-5' => array('恩格斯逝世纪念日'),
     '8-6' => array('国际电影节'),
-    '8-12' => array('国际青年日'),
+    '8-8' => array('全民健身日'),
+    '8-9' => array('国际土著人日'),
+    '8-12' => array('国际青年节'),
+    '8-14' => array('绿色情人节'),
+    '8-19' => array('世界人道主义日", "中国医师节'),
     '8-22' => array('邓小平诞辰纪念日'),
+    '8-29' => array('全国测绘法宣传日'),
     '9-3' => array('中国抗日战争胜利纪念日'),
+    '9-5' => array('中华慈善日'),
     '9-8' => array('世界扫盲日'),
-    '9-9' => array('毛泽东逝世纪念日'),
-    '9-14' => array('世界清洁地球日'),
+    '9-9' => array('毛泽东逝世纪念日", "全国拒绝酒驾日'),
+    '9-14' => array('世界清洁地球日", "相片情人节'),
+    '9-15' => array('国际民主日'),
+    '9-16' => array('国际臭氧层保护日'),
+    '9-17' => array('世界骑行日'),
     '9-18' => array('九一八事变纪念日'),
     '9-20' => array('全国爱牙日'),
     '9-21' => array('国际和平日'),
     '9-27' => array('世界旅游日'),
+    '9-30' => array('中国烈士纪念日'),
+    '10-1' => array('国际老年人日'),
+    '10-2' => array('国际非暴力日'),
     '10-4' => array('世界动物日'),
+    '10-11' => array('国际女童日'),
     '10-10' => array('辛亥革命纪念日'),
-    '10-13' => array('中国少年先锋队诞辰日'),
+    '10-13' => array('国际减轻自然灾害日", "中国少年先锋队诞辰日'),
+    '10-14' => array('葡萄酒情人节'),
+    '10-16' => array('世界粮食日'),
+    '10-17' => array('全国扶贫日'),
+    '10-20' => array('世界统计日'),
+    '10-24' => array('世界发展信息日", "程序员节'),
     '10-25' => array('抗美援朝纪念日'),
+    '11-5' => array('世界海啸日'),
+    '11-8' => array('记者节'),
+    '11-9' => array('全国消防日'),
+    '11-11' => array('光棍节'),
     '11-12' => array('孙中山诞辰纪念日'),
+    '11-14' => array('电影情人节'),
+    '11-16' => array('国际宽容日'),
     '11-17' => array('国际大学生节'),
+    '11-19' => array('世界厕所日'),
     '11-28' => array('恩格斯诞辰纪念日'),
+    '11-29' => array('国际声援巴勒斯坦人民日'),
     '12-1' => array('世界艾滋病日'),
+    '12-2' => array('全国交通安全日'),
+    '12-3' => array('世界残疾人日'),
+    '12-4' => array('全国法制宣传日'),
+    '12-5' => array('世界弱能人士日", "国际志愿人员日'),
+    '12-7' => array('国际民航日'),
+    '12-9' => array('世界足球日", "国际反腐败日'),
+    '12-10' => array('世界人权日'),
+    '12-11' => array('国际山岳日'),
     '12-12' => array('西安事变纪念日'),
     '12-13' => array('国家公祭日'),
+    '12-14' => array('拥抱情人节'),
+    '12-18' => array('国际移徙者日'),
     '12-26' => array('毛泽东诞辰纪念日')
   );
 
@@ -2962,8 +3064,7 @@ class EightChar
 
   private function getDiShi($zhiIndex)
   {
-    $offset = EightChar::$CHANG_SHENG_OFFSET[$this->getDayGan()];
-    $index = $offset + ($this->getDayGanIndex() % 2 == 0 ? $zhiIndex : 0 - $zhiIndex);
+    $index = EightChar::$CHANG_SHENG_OFFSET[$this->getDayGan()] + ($this->getDayGanIndex() % 2 == 0 ? $zhiIndex : 0 - $zhiIndex);
     if ($index >= 12) {
       $index -= 12;
     }
@@ -4239,9 +4340,7 @@ class LunarTime
    */
   public function getTianShen()
   {
-    $dayZhi = $this->lunar->getDayZhiExact();
-    $offset = LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$dayZhi];
-    return LunarUtil::$TIAN_SHEN[($this->zhiIndex + $offset) % 12 + 1];
+    return LunarUtil::$TIAN_SHEN[($this->zhiIndex + LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$this->lunar->getDayZhiExact()]) % 12 + 1];
   }
 
   /**
@@ -6234,9 +6333,7 @@ class Lunar
    */
   public function getDayTianShen()
   {
-    $monthZhi = $this->getMonthZhi();
-    $offset = LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$monthZhi];
-    return LunarUtil::$TIAN_SHEN[($this->dayZhiIndex + $offset) % 12 + 1];
+    return LunarUtil::$TIAN_SHEN[($this->dayZhiIndex + LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$this->getMonthZhi()]) % 12 + 1];
   }
 
   /**
@@ -6245,9 +6342,7 @@ class Lunar
    */
   public function getTimeTianShen()
   {
-    $dayZhi = $this->getDayZhiExact();
-    $offset = LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$dayZhi];
-    return LunarUtil::$TIAN_SHEN[($this->timeZhiIndex + $offset) % 12 + 1];
+    return LunarUtil::$TIAN_SHEN[($this->timeZhiIndex + LunarUtil::$ZHI_TIAN_SHEN_OFFSET[$this->getDayZhiExact()]) % 12 + 1];
   }
 
   /**
@@ -7303,12 +7398,18 @@ class LunarMonth
    */
   private $firstJulianDay;
 
-  function __construct($lunarYear, $lunarMonth, $dayCount, $firstJulianDay)
+  private $index;
+
+  private $zhiIndex;
+
+  function __construct($lunarYear, $lunarMonth, $dayCount, $firstJulianDay, $index)
   {
     $this->year = intval($lunarYear);
     $this->month = intval($lunarMonth);
     $this->dayCount = intval($dayCount);
     $this->firstJulianDay = $firstJulianDay;
+    $this->index = $index;
+    $this->zhiIndex = ($index - 1 + LunarUtil::$BASE_MONTH_ZHI_INDEX) % 12;
   }
 
   public function toString()
@@ -7371,6 +7472,148 @@ class LunarMonth
   public function getFirstJulianDay()
   {
     return $this->firstJulianDay;
+  }
+
+  public function getIndex()
+  {
+    return $this->index;
+  }
+
+  public function getZhiIndex()
+  {
+    return $this->zhiIndex;
+  }
+
+  public function getGanIndex()
+  {
+    $offset = (LunarYear::fromYear($this->year)->getGanIndex() + 1) % 5 * 2;
+    return ($this->index - 1 + $offset) % 10;
+  }
+
+  public function getGan()
+  {
+    return LunarUtil::$GAN[$this->getGanIndex() + 1];
+  }
+
+  public function getZhi()
+  {
+    return LunarUtil::$ZHI[$this->getZhiIndex() + 1];
+  }
+
+  public function getGanZhi()
+  {
+    return $this->getGan() . $this->getZhi();
+  }
+
+  /**
+   * 获取喜神方位
+   * @return string 喜神方位，如艮
+   */
+  public function getPositionXi()
+  {
+    return LunarUtil::$POSITION_XI[$this->getGanIndex() + 1];
+  }
+
+  /**
+   * 获取喜神方位描述
+   * @return string 喜神方位描述，如东北
+   */
+  public function getPositionXiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionXi()];
+  }
+
+  /**
+   * 获取阳贵神方位
+   * @return string 阳贵神方位，如艮
+   */
+  public function getPositionYangGui()
+  {
+    return LunarUtil::$POSITION_YANG_GUI[$this->getGanIndex() + 1];
+  }
+
+  /**
+   * 获取阳贵神方位描述
+   * @return string 阳贵神方位描述，如东北
+   */
+  public function getPositionYangGuiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionYangGui()];
+  }
+
+  /**
+   * 获取阴贵神方位
+   * @return string 阴贵神方位，如艮
+   */
+  public function getPositionYinGui()
+  {
+    return LunarUtil::$POSITION_YIN_GUI[$this->getGanIndex() + 1];
+  }
+
+  /**
+   * 获取阴贵神方位描述
+   * @return string 阴贵神方位描述，如东北
+   */
+  public function getPositionYinGuiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionYinGui()];
+  }
+
+  /**
+   * 获取福神方位，默认流派2
+   * @return string 福神方位，如艮
+   */
+  public function getPositionFu()
+  {
+    return $this->getPositionFuBySect(2);
+  }
+
+  /**
+   * 获取福神方位
+   * @param int $sect 流派，可选1或2
+   * @return string 福神方位，如艮
+   */
+  public function getPositionFuBySect($sect)
+  {
+    $fu = 1 == $sect ? LunarUtil::$POSITION_FU : LunarUtil::$POSITION_FU_2;
+    return $fu[$this->getGanIndex() + 1];
+  }
+
+  /**
+   * 获取福神方位描述，默认流派2
+   * @return string 福神方位描述，如东北
+   */
+  public function getPositionFuDesc()
+  {
+    return $this->getPositionFuDescBySect(2);
+  }
+
+  /**
+   * 获取福神方位描述
+   * @param int $sect 流派，可选1或2
+   * @return string 福神方位描述，如东北
+   */
+  public function getPositionFuDescBySect($sect)
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionFuBySect($sect)];
+  }
+
+  /**
+   * 获取财神方位
+   * @return string 财神方位，如艮
+   */
+  public function getPositionCai()
+  {
+    return LunarUtil::$POSITION_CAI[$this->getGanIndex() + 1];
+  }
+
+  /**
+   * 获取财神方位描述
+   * @return string 财神方位描述，如东北
+   */
+  public function getPositionCaiDesc()
+  {
+    return LunarUtil::$POSITION_DESC[$this->getPositionCai()];
   }
 
   /**
@@ -7770,17 +8013,20 @@ class LunarYear
 
     $y = $prevYear;
     $m = 11;
+    $index = $m;
     for ($i = 0, $j = count($dayCounts); $i < $j; $i++) {
       $cm = $m;
       if ($y == $leapYear && $i == $leapIndex) {
         $cm = -$cm;
       }
-      $this->months[] = new LunarMonth($y, $cm, $dayCounts[$i], $hs[$i] + Solar::$J2000);
+      $this->months[] = new LunarMonth($y, $cm, $dayCounts[$i], $hs[$i] + Solar::$J2000, $index);
       if ($y != $leapYear || $i + 1 != $leapIndex) {
         $m++;
       }
+      $index++;
       if ($m == 13) {
         $m = 1;
+        $index = 1;
         $y++;
       }
     }
@@ -10311,7 +10557,24 @@ class Foto
    */
   public function getFestivals()
   {
-    return FotoUtil::getFestivals($this->getMonth() . '-' . $this->getDay());
+    return FotoUtil::getFestivals(abs($this->getMonth()) . '-' . $this->getDay());
+  }
+
+  /**
+   * 获取纪念日
+   *
+   * @return string[] 纪念日列表
+   */
+  public function getOtherFestivals()
+  {
+    $l = array();
+    $key = $this->getMonth() . '-' . $this->getDay();
+    if (!empty(FotoUtil::$OTHER_FESTIVAL[$key])) {
+      foreach (FotoUtil::$OTHER_FESTIVAL[$key] as $f) {
+        $l[] = $f;
+      }
+    }
+    return $l;
   }
 
   public function isMonthZhai()
