@@ -922,7 +922,7 @@ class LunarUtil
     '6-6' => array('天贶节'),
     '6-24' => array('观莲节'),
     '6-25' => array('五谷母节'),
-    '7-14' => array('中元节'),
+    '7-15' => array('中元节'),
     '7-22' => array('财神节'),
     '7-29' => array('地藏节'),
     '8-1' => array('天灸日'),
@@ -9526,17 +9526,15 @@ class Solar
     $y = $this->year + $years;
     $m = $this->month;
     $d = $this->day;
-    // 2月处理
-    if (2 == $m) {
+    if (1582 == $y && 10 == $m) {
+      if ($d > 4 && $d < 15) {
+        $d += 10;
+      }
+    } else if (2 == $m) {
       if ($d > 28) {
         if (!SolarUtil::isLeapYear($y)) {
           $d = 28;
         }
-      }
-    }
-    if (1582 == $y && 10 == $m) {
-      if ($d > 4 && $d < 15) {
-        $d += 10;
       }
     }
     return self::fromYmdHms($y, $m, $d, $this->hour, $this->minute, $this->second);
@@ -9552,17 +9550,14 @@ class Solar
     $y = $month->getYear();
     $m = $month->getMonth();
     $d = $this->day;
-    // 2月处理
-    if (2 == $m) {
-      if ($d > 28) {
-        if (!SolarUtil::isLeapYear($y)) {
-          $d = 28;
-        }
-      }
-    }
     if (1582 == $y && 10 == $m) {
       if ($d > 4 && $d < 15) {
         $d += 10;
+      }
+    } else {
+      $days = SolarUtil::getDaysOfMonth($y, $m);
+      if ($d > $days) {
+        $d = $days;
       }
     }
     return self::fromYmdHms($y, $m, $d, $this->hour, $this->minute, $this->second);
