@@ -320,3 +320,9 @@ echo $solar->getLunar()->toString() . "\n";
 // 佛历
 $foto = Foto::fromLunar(Lunar::fromYmd(2021, 10, 14));
 echo $foto->toFullString() . "\n";
+
+$solar = Solar::fromYmdHms(2000, 1, 23, 22, 0, 0);
+$lunar = $solar->getLunar();
+$eightChar = $lunar->getEightChar();
+// 己卯 丁丑 庚辰 丁亥
+echo $eightChar->getYear() . " " . $eightChar->getMonth(). " " . $eightChar->getDay(). " " . $eightChar->getTime() . "\n";
