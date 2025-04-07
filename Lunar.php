@@ -3536,15 +3536,12 @@ class EightChar
    */
   public function getShenGong()
   {
-    $offset = LunarUtil::index($this->getMonthZhi(), self::$MONTH_ZHI, 0) + LunarUtil::index($this->getTimeZhi(), LunarUtil::$ZHI, 0);
-    while ($offset > 12) {
-      $offset -= 12;
-    }
-    $ganIndex = ($this->lunar->getYearGanIndexExact() + 1) * 2 + ($offset % 12);
+    $offset = (LunarUtil::index($this->getMonthZhi(), self::$MONTH_ZHI, 0) + LunarUtil::index($this->getTimeZhi(), LunarUtil::$ZHI, 0) - 1) % 12;
+    $ganIndex = ($this->lunar->getYearGanIndexExact() + 1) * 2 + $offset;
     while ($ganIndex > 10) {
       $ganIndex -= 10;
     }
-    return sprintf('%s%s', LunarUtil::$GAN[$ganIndex], self::$MONTH_ZHI[$offset]);
+    return sprintf('%s%s', LunarUtil::$GAN[$ganIndex + 1], self::$MONTH_ZHI[$offset + 1]);
   }
 
   /**
@@ -6065,11 +6062,11 @@ class Lunar
 
   protected function _getDayPositionTaiSui($dayInGanZhi, $yearZhiIndex)
   {
-    if (strpos('甲子,乙丑,丙寅,丁卯,戊辰,已巳', $dayInGanZhi) !== false) {
+    if (strpos('甲子,乙丑,丙寅,丁卯,戊辰,己巳', $dayInGanZhi) !== false) {
       $p = '震';
-    } else if (strpos('丙子,丁丑,戊寅,已卯,庚辰,辛巳', $dayInGanZhi) !== false) {
+    } else if (strpos('丙子,丁丑,戊寅,己卯,庚辰,辛巳', $dayInGanZhi) !== false) {
       $p = '离';
-    } else if (strpos('戊子,已丑,庚寅,辛卯,壬辰,癸巳', $dayInGanZhi) !== false) {
+    } else if (strpos('戊子,己丑,庚寅,辛卯,壬辰,癸巳', $dayInGanZhi) !== false) {
       $p = '中';
     } else if (strpos('庚子,辛丑,壬寅,癸卯,甲辰,乙巳', $dayInGanZhi) !== false) {
       $p = '兑';
